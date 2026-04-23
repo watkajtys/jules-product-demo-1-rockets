@@ -1,10 +1,11 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # AeroCore Systems - Propulsion E-Commerce
+## Jules Learning Project - 001
 
-Welcome to the **AeroCore Systems** codebase. This application is developed as an end-to-end demo showcase for **Jules**. The goal of this project is to demonstrate a fully realized, architecturally robust React application that intentionally layers real-world friction within its checkout flow to simulate complex data-gathering scenarios.
+Welcome to the **AeroCore Systems** codebase. This application is developed as an end-to-end demo showcase for **Jules**.
+
+We intentionally added too many steps to the checkout process so we can give Jules some "real" product feedback and it can help smooth those papercuts.
+
+Below is a blueprint of how this application is structured.
 
 ---
 
