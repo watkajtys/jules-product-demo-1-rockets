@@ -10,8 +10,22 @@ import { useCart } from "../context/CartContext";
 export default function Cart() {
   const navigate = useNavigate();
   const { cartItems: items, removeItem: onRemove, setQuantity: onSetQuantity } = useCart();
-  const [localQuantities, setLocalQuantities] = useState<Record<string, string>>({});
+  const [prevItems, setPrevItems] = useState(items);
+  const [localQuantities, setLocalQuantities] = useState<Record<string, string>>(() => {
+    const q: Record<string, string> = {};
+    items.forEach(item => { q[item.id] = item.quantity.toString(); });
+    return q;
+  });
+  
   const [needsUpdate, setNeedsUpdate] = useState(false);
+  
+  if (items !== prevItems) {
+    setPrevItems(items);
+    const q: Record<string, string> = {};
+    items.forEach(item => { q[item.id] = item.quantity.toString(); });
+    setLocalQuantities(q);
+    setNeedsUpdate(false);
+  }
   
   // "Well-meaning friend" features
   const [timeLeft, setTimeLeft] = useState(900); // 15 mins
@@ -28,13 +42,6 @@ export default function Cart() {
       }
     };
   }, []);
-
-  useEffect(() => {
-    const q: Record<string, string> = {};
-    items.forEach(item => { q[item.id] = item.quantity.toString(); });
-    setLocalQuantities(q);
-    setNeedsUpdate(false);
-  }, [items]);
 
   const hasItems = items.length > 0;
   
