@@ -4,16 +4,12 @@
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { CartItem } from "../types";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
-interface CartProps {
-  items: CartItem[];
-  onRemove: (id: string) => void;
-  onSetQuantity: (id: string, qty: number) => void;
-  onCheckout: () => void;
-}
-
-export default function Cart({ items, onRemove, onSetQuantity, onCheckout }: CartProps) {
+export default function Cart() {
+  const navigate = useNavigate();
+  const { cartItems: items, removeItem: onRemove, setQuantity: onSetQuantity } = useCart();
   const [localQuantities, setLocalQuantities] = useState<Record<string, string>>({});
   const [needsUpdate, setNeedsUpdate] = useState(false);
   
@@ -266,7 +262,7 @@ export default function Cart({ items, onRemove, onSetQuantity, onCheckout }: Car
             )}
 
             <button 
-              onClick={onCheckout}
+              onClick={() => navigate("/checkout")}
               disabled={needsUpdate}
               className={`w-full btn-primary flex justify-center gap-2 items-center text-xs tracking-widest ${needsUpdate ? 'opacity-30 cursor-not-allowed border-none' : ''}`}
             >

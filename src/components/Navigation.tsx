@@ -5,13 +5,11 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
-interface NavigationProps {
-  cartCount: number;
-}
-
-export default function Navigation({ cartCount }: NavigationProps) {
+export default function Navigation() {
   const navigate = useNavigate();
+  const { cartCount } = useCart();
   return (
     <header className="bg-surface/90 backdrop-blur-md border-b border-surface-variant shadow-[0_4px_30px_rgba(0,0,0,0.5)] flex justify-between items-center px-6 h-16 w-full fixed top-0 z-50">
       <div 

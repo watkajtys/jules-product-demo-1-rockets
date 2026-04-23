@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useCart } from "../context/CartContext";
 import { Product } from "../types";
 
 interface ProductDetailsProps {
   product: Product;
-  onAddToCart: (product: Product) => void;
   onBack: () => void;
 }
 
-export default function ProductDetails({ product, onAddToCart, onBack }: ProductDetailsProps) {
+export default function ProductDetails({ product, onBack }: ProductDetailsProps) {
+  const { setAddingProduct } = useCart();
   const [zipCode, setZipCode] = useState("");
   const [checkingZip, setCheckingZip] = useState(false);
   const [zipChecked, setZipChecked] = useState(false);
@@ -62,8 +63,8 @@ export default function ProductDetails({ product, onAddToCart, onBack }: Product
     }
     
     setErrorMsg("");
-    onAddToCart(product);
-  }, [zipChecked, intendedUse.length, termsAccepted, product, onAddToCart]);
+    setAddingProduct(product);
+  }, [zipChecked, intendedUse.length, termsAccepted, product, setAddingProduct]);
 
   return (
     <div className="max-w-5xl mx-auto w-full">
