@@ -3,69 +3,70 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useEffect, useRef, useCallback, useActionState } from "react";
 
 const YEARS = Array.from({ length: 200 }, (_, i) => 1900 + i);
 const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-
-import { CheckoutFormData } from "../types";
 
 interface CheckoutProps {
   total: number;
   onComplete: () => void;
 }
 
-export default function Checkout({ total, onComplete }: CheckoutProps) {
-  const [formData, setFormData] = useState<CheckoutFormData>({});
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+interface ActionState {
+  error: string | null;
+  isSuccess: boolean;
+}
 
-  const processingTimeoutRef = useRef<number | undefined>(undefined);
-  const successTimeoutRef = useRef<number | undefined>(undefined);
+const checkoutAction = async (prevState: ActionState, formData: FormData): Promise<ActionState> => {
+  const email = formData.get("email") as string;
+  const emailConfirm = formData.get("emailConfirm") as string;
+  const state = formData.get("state") as string;
+
+  if (email !== emailConfirm) {
+    return {
+      error: "Email addresses do not match exactly. Please check spelling.",
+      isSuccess: false,
+    };
+  }
+
+  if (!state || state.length <= 2) {
+    return {
+      error: "Please spell out your full state. No acronyms (e.g., use 'California' instead of 'CA').",
+      isSuccess: false,
+    };
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
+  return {
+    error: null,
+    isSuccess: true,
+  };
+};
+
+export default function Checkout({ total, onComplete }: CheckoutProps) {
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const [state, formAction, isPending] = useActionState(checkoutAction, {
+    error: null,
+    isSuccess: false,
+  });
 
   useEffect(() => {
-    return () => {
-      if (processingTimeoutRef.current !== undefined) {
-        clearTimeout(processingTimeoutRef.current);
-      }
-      if (successTimeoutRef.current !== undefined) {
-        clearTimeout(successTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-
-    // Completely arbitrary "amateur" validations
-    if (formData.email !== formData.emailConfirm) {
-      setErrorMsg("Email addresses do not match exactly. Please check spelling.");
-      return;
+    if (state.isSuccess) {
+      const timer = setTimeout(onComplete, 4000);
+      return () => clearTimeout(timer);
     }
-
-    if (!formData.state || formData.state.length <= 2) {
-      setErrorMsg("Please spell out your full state. No acronyms (e.g., use 'California' instead of 'CA').");
-      return;
-    }
-
-    setIsProcessing(true);
-    processingTimeoutRef.current = window.setTimeout(() => {
-      setIsProcessing(false);
-      setIsSuccess(true);
-      successTimeoutRef.current = window.setTimeout(onComplete, 4000);
-    }, 3000);
-  }, [formData, onComplete]);
+  }, [state.isSuccess, onComplete]);
 
   const handleClear = useCallback(() => {
     if (window.confirm("Are you sure you want to clear your checkout data?")) {
-      setFormData({});
-      setErrorMsg(null);
+      formRef.current?.reset();
     }
   }, []);
 
-  if (isSuccess) {
+  if (state.isSuccess) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center animate-pulse">
         <div className="bg-surface-container-low p-8 rounded-full mb-8 flex items-center justify-center">
@@ -88,17 +89,17 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
 
       <div className="bg-surface relative overflow-hidden">
         <div className="relative z-10">
-          {errorMsg && (
+          {state.error && (
             <div className="bg-error/10 text-error border border-error/20 p-4 mb-6 flex items-start gap-3">
                <span className="material-symbols-outlined text-[20px] mt-0.5 flex-shrink-0">error</span>
                <div>
                  <h3 className="font-bold text-sm uppercase">Please Correct Errors</h3>
-                 <p className="text-xs mt-1 font-mono">{errorMsg}</p>
+                 <p className="text-xs mt-1 font-mono">{state.error}</p>
                </div>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-8 focus-within:relative z-20">
+          <form ref={formRef} action={formAction} className="space-y-8 focus-within:relative z-20">
             
             <div className="border-b border-surface-variant pb-8">
               <h2 className="text-primary font-mono text-sm uppercase font-bold tracking-widest mb-6 flex items-center gap-2">
@@ -111,8 +112,7 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                   <input 
                     required
                     type="text" 
-                    value={formData.firstName || ""}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                    name="firstName"
                     className="w-full border border-surface-variant p-2 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                   />
                 </div>
@@ -121,8 +121,7 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                   <input 
                     required
                     type="text" 
-                    value={formData.lastName || ""}
-                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                    name="lastName"
                     className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                   />
                 </div>
@@ -134,8 +133,7 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                   <input 
                     required
                     type="email" 
-                    value={formData.email || ""}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    name="email"
                     className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                   />
                 </div>
@@ -144,8 +142,7 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                   <input 
                     required
                     type="email" 
-                    value={formData.emailConfirm || ""}
-                    onChange={(e) => setFormData({...formData, emailConfirm: e.target.value})}
+                    name="emailConfirm"
                     className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                   />
                 </div>
@@ -153,8 +150,7 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                   <label className="block text-xs font-bold text-on-surface-variant mb-2 font-mono uppercase">Phone Number</label>
                   <input 
                     type="tel" 
-                    value={formData.phone || ""}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    name="phone"
                     className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                   />
                 </div>
@@ -173,8 +169,7 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                   <input 
                     required
                     type="text" 
-                    value={formData.street1 || ""}
-                    onChange={(e) => setFormData({...formData, street1: e.target.value})}
+                    name="street1"
                     className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                   />
                 </div>
@@ -182,8 +177,7 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                   <label className="block text-xs font-bold text-on-surface-variant mb-2 font-mono uppercase">Address Line 2 (Apt, Suite, etc.)</label>
                   <input 
                     type="text" 
-                    value={formData.street2 || ""}
-                    onChange={(e) => setFormData({...formData, street2: e.target.value})}
+                    name="street2"
                     className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                   />
                 </div>
@@ -194,8 +188,7 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                     <input 
                       required
                       type="text" 
-                      value={formData.city || ""}
-                      onChange={(e) => setFormData({...formData, city: e.target.value})}
+                      name="city"
                       className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                     />
                   </div>
@@ -204,9 +197,8 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                     <input 
                       required
                       type="text" 
+                      name="state"
                       placeholder="e.g. California"
-                      value={formData.state || ""}
-                      onChange={(e) => setFormData({...formData, state: e.target.value})}
                       className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                     />
                   </div>
@@ -215,10 +207,9 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                     <input 
                       required
                       type="text" 
+                      name="zip"
                       maxLength={5}
                       placeholder="5 digits only"
-                      value={formData.zip || ""}
-                      onChange={(e) => setFormData({...formData, zip: e.target.value})}
                       className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                     />
                   </div>
@@ -243,8 +234,7 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                   <label className="block text-xs font-bold text-on-surface-variant mb-2 font-mono uppercase">Card Type *</label>
                   <select 
                     required
-                    value={formData.cardType || ""}
-                    onChange={(e) => setFormData({...formData, cardType: e.target.value})}
+                    name="cardType"
                     className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono appearance-none" 
                   >
                     <option value="">-- Select Card Type --</option>
@@ -260,8 +250,7 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                   <input 
                     required
                     type="text" 
-                    value={formData.cardNumber || ""}
-                    onChange={(e) => setFormData({...formData, cardNumber: e.target.value})}
+                    name="cardNumber"
                     className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                   />
                 </div>
@@ -271,13 +260,12 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                     <label className="block text-xs font-bold text-on-surface-variant mb-2 font-mono uppercase">Expiration Month *</label>
                     <select 
                       required
-                      value={formData.expMonth || ""}
-                      onChange={(e) => setFormData({...formData, expMonth: e.target.value})}
+                      name="expMonth"
                       className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono appearance-none" 
                     >
                       <option value="">Month</option>
                       {MONTHS.map(m => (
-                        <option key={m} value={m}>{m < 10 ? `0${m}` : m}</option>
+                        <option key={m} value={m.toString()}>{m < 10 ? `0${m}` : m}</option>
                       ))}
                     </select>
                   </div>
@@ -285,13 +273,12 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                     <label className="block text-xs font-bold text-on-surface-variant mb-2 font-mono uppercase">Expiration Year *</label>
                     <select 
                       required
-                      value={formData.expYear || ""}
-                      onChange={(e) => setFormData({...formData, expYear: e.target.value})}
+                      name="expYear"
                       className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono appearance-none" 
                     >
                       <option value="">Year</option>
                       {YEARS.map(y => (
-                        <option key={y} value={y}>{y}</option>
+                        <option key={y} value={y.toString()}>{y}</option>
                       ))}
                     </select>
                   </div>
@@ -308,8 +295,7 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
                 <label className="block text-xs font-bold text-on-surface-variant mb-2 font-mono uppercase">Special Delivery Instructions</label>
                 <textarea 
                   rows={4}
-                  value={formData.comments || ""}
-                  onChange={(e) => setFormData({...formData, comments: e.target.value})}
+                  name="comments"
                   className="w-full border border-surface-variant p-3 bg-surface text-on-surface text-sm focus:outline-none focus:border-primary font-mono" 
                 />
               </div>
@@ -350,11 +336,11 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
               </button>
               <button 
                 type="submit"
-                disabled={isProcessing}
-                className={`btn-primary px-12 py-4 shadow-[0_0_20px_rgba(255,180,166,0.3)] flex items-center gap-2 ${isProcessing ? 'opacity-50 cursor-wait' : ''}`}
+                disabled={isPending}
+                className={`btn-primary px-12 py-4 shadow-[0_0_20px_rgba(255,180,166,0.3)] flex items-center gap-2 ${isPending ? 'opacity-50 cursor-wait' : ''}`}
               >
-                {isProcessing ? "PROCESSING..." : "PLACE ORDER"}
-                <span className={`material-symbols-outlined ${isProcessing ? "animate-spin" : ""}`}>{isProcessing ? "sync" : "arrow_forward"}</span>
+                {isPending ? "PROCESSING..." : "PLACE ORDER"}
+                <span className={`material-symbols-outlined ${isPending ? "animate-spin" : ""}`}>{isPending ? "sync" : "arrow_forward"}</span>
               </button>
             </div>
 
@@ -364,5 +350,3 @@ export default function Checkout({ total, onComplete }: CheckoutProps) {
     </div>
   );
 }
-
-
