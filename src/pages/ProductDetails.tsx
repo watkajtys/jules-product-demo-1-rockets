@@ -5,6 +5,7 @@ import { Product } from "../types";
 interface ProductDetailsProps {
   product: Product;
   onBack: () => void;
+  key?: string;
 }
 
 export default function ProductDetails({ product, onBack }: ProductDetailsProps) {

@@ -30,6 +30,7 @@ const ProductLoader = () => {
 
   return (
     <ProductDetails 
+      key={product.id}
       product={product} 
       onBack={() => navigate("/")} 
     />
@@ -65,8 +66,14 @@ export default function App() {
       <Navigation />
       
       {addingProduct && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md">
-          <div className="bg-surface-container-low p-8 max-w-md w-full border border-surface-variant shadow-2xl relative overflow-hidden scanline-overlay">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md"
+          onClick={() => setAddingProduct(null)}
+        >
+          <div 
+            className="bg-surface-container-low p-8 max-w-md w-full border border-surface-variant shadow-2xl relative overflow-hidden scanline-overlay"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="relative z-10">
               <h2 className="text-xl font-bold mb-4 uppercase text-on-surface border-b-2 border-surface-variant pb-2 flex items-center gap-2 tracking-tight">
                 <span className="material-symbols-outlined text-xl text-primary">add_shopping_cart</span> ADD TO CART
@@ -79,6 +86,7 @@ export default function App() {
                   className="bg-primary text-on-primary border border-primary-fixed-dim hover:bg-primary-fixed hover:shadow-[0_0_15px_rgba(255,180,166,0.4)] px-8 py-3 text-xs uppercase font-bold tracking-widest transition-all duration-200 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]"
                   onClick={() => {
                     if (addingProduct) addItem(addingProduct);
+                    setAddingProduct(null);
                     navigate("/cart");
                   }}
                 >

@@ -10,7 +10,6 @@ import { useCart } from "../context/CartContext";
 export default function Cart() {
   const navigate = useNavigate();
   const { cartItems: items, removeItem: onRemove, setQuantity: onSetQuantity } = useCart();
-  const [prevItems, setPrevItems] = useState(items);
   const [localQuantities, setLocalQuantities] = useState<Record<string, string>>(() => {
     const q: Record<string, string> = {};
     items.forEach(item => { q[item.id] = item.quantity.toString(); });
@@ -18,14 +17,6 @@ export default function Cart() {
   });
   
   const [needsUpdate, setNeedsUpdate] = useState(false);
-  
-  if (items !== prevItems) {
-    setPrevItems(items);
-    const q: Record<string, string> = {};
-    items.forEach(item => { q[item.id] = item.quantity.toString(); });
-    setLocalQuantities(q);
-    setNeedsUpdate(false);
-  }
   
   // "Well-meaning friend" features
   const [timeLeft, setTimeLeft] = useState(900); // 15 mins
@@ -159,7 +150,14 @@ export default function Cart() {
                     </div>
                     
                     <button 
-                      onClick={() => onRemove(item.id)}
+                      onClick={() => {
+                        onRemove(item.id);
+                        setLocalQuantities(prev => {
+                          const next = { ...prev };
+                          delete next[item.id];
+                          return next;
+                        });
+                      }}
                       className="text-xs text-on-surface-variant hover:text-error font-bold uppercase tracking-tighter flex items-center gap-1 transition-colors"
                     >
                       <span className="material-symbols-outlined text-[14px]">delete</span> Delete
