@@ -11,7 +11,7 @@ interface ProductCardProps {
   product: Product;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+export default function ProductCard({ product }: ProductCardProps) {
   const navigate = useNavigate();
   return (
     <div className="bg-surface-container-low border border-surface-variant rounded-lg p-6 relative group hover:border-outline transition-colors duration-300 flex flex-col h-full">
@@ -60,5 +60,5 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   );
 }
 
-export default ProductCard;
+
 

@@ -1,6 +1,6 @@
 import React from "react";
 
-const SkeletonCard: React.FC = () => {
+export default function SkeletonCard() {
   return (
     <div className="bg-surface-container-low border border-surface-variant rounded-lg p-6 relative flex flex-col h-full animate-pulse">
       <div className="absolute top-0 right-0 p-3 z-10">
@@ -20,6 +20,6 @@ const SkeletonCard: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
-export default SkeletonCard;
+

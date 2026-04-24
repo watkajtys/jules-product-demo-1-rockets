@@ -2,7 +2,7 @@ import React from "react";
 import { useProducts } from "../hooks/useFetchProducts";
 import ProductCard from "./ProductCard";
 
-const CatalogGrid: React.FC = () => {
+export default function CatalogGrid() {
   const products = useProducts();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -11,6 +11,5 @@ const CatalogGrid: React.FC = () => {
       ))}
     </div>
   );
-};
+}
 
-export default CatalogGrid;
