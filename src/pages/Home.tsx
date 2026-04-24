@@ -1,6 +1,7 @@
-import React from "react";
-import { PRODUCTS } from "../types";
-import ProductCard from "../components/ProductCard";
+import React, { Suspense } from "react";
+import CatalogGrid from "../components/CatalogGrid";
+import SkeletonCard from "../components/SkeletonCard";
+
 
 export default function Home() {
   return (
@@ -43,12 +44,16 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {PRODUCTS.map(p => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          <Suspense fallback={
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+          }>
+            <CatalogGrid />
+          </Suspense>
         </section>
+
+
 
         <aside className="w-full flex flex-col gap-6">
           <div className="flex items-center gap-4 border-b border-surface-variant pb-2">

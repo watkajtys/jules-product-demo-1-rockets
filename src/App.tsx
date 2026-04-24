@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, Suspense } from "react";
 import { Routes, Route, useLocation, useNavigate, Navigate, useParams } from "react-router-dom";
 import { useCart } from "./context/CartContext";
-import { PRODUCTS, Product, CartItem } from "./types";
+import { Product, CartItem } from "./types";
 import Navigation from "./components/Navigation";
 import ProductCard from "./components/ProductCard";
 import ProductDetails from "./pages/ProductDetails";
@@ -17,16 +17,17 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Search from "./pages/Search";
 
-const ProductDetailsWrapper = () => {
+import { useProduct } from "./hooks/useFetchProducts";
+
+const ProductLoader = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { setAddingProduct } = useCart();
-  const product = PRODUCTS.find(p => p.id === id);
-  
+  const product = useProduct(id);
+
   if (!product) {
     return <Navigate to="/" replace />;
   }
-  
+
   return (
     <ProductDetails 
       product={product} 
@@ -34,6 +35,21 @@ const ProductDetailsWrapper = () => {
     />
   );
 };
+
+const ProductDetailsWrapper = () => {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center py-24 animate-pulse">
+        <span className="material-symbols-outlined animate-spin text-primary text-4xl mb-4">sync</span>
+        <span className="text-xs font-bold tracking-widest uppercase text-on-surface-variant">Downloading Manifest Data...</span>
+      </div>
+    }>
+      <ProductLoader />
+    </Suspense>
+  );
+};
+
+
 
 export default function App() {
   const location = useLocation();
