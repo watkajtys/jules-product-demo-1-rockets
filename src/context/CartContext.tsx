@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { Product, CartItem } from "../types";
 
 /**
@@ -56,40 +56,46 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   
   const [addingProduct, setAddingProduct] = useState<Product | null>(null);
 
-  // Save to sessionStorage on change
-  useEffect(() => {
-    sessionStorage.setItem("cart", JSON.stringify(cartItems));
-  }, [cartItems]);
-
   const cartCount = useMemo(() => cartItems.reduce((sum, item) => sum + item.quantity, 0), [cartItems]);
   const cartTotal = useMemo(() => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [cartItems]);
 
   const addItem = useCallback((product: Product) => {
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prev, { ...product, quantity: 1 }];
+      const nextItems = existing
+        ? prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)
+        : [...prev, { ...product, quantity: 1 }];
+
+      sessionStorage.setItem("cart", JSON.stringify(nextItems));
+      return nextItems;
     });
   }, []);
 
   const removeItem = useCallback((id: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+    setCartItems(prev => {
+      const nextItems = prev.filter(item => item.id !== id);
+      sessionStorage.setItem("cart", JSON.stringify(nextItems));
+      return nextItems;
+    });
   }, []);
 
   const setQuantity = useCallback((id: string, qty: number) => {
-    setCartItems(prev => prev.map(item => {
-      if (item.id === id) {
-        const newQty = Math.max(1, qty);
-        return { ...item, quantity: newQty };
-      }
-      return item;
-    }));
+    setCartItems(prev => {
+      const nextItems = prev.map(item => {
+        if (item.id === id) {
+          const newQty = Math.max(1, qty);
+          return { ...item, quantity: newQty };
+        }
+        return item;
+      });
+      sessionStorage.setItem("cart", JSON.stringify(nextItems));
+      return nextItems;
+    });
   }, []);
 
   const clearCart = useCallback(() => {
     setCartItems([]);
+    sessionStorage.setItem("cart", JSON.stringify([]));
   }, []);
 
   const value = useMemo(() => ({
