@@ -11,7 +11,15 @@ interface ProductCardProps {
   product: Product;
 }
 
+/**
+ * A card component that showcases an individual Rocket or Manifest item.
+ * Displays the item's name, category, description, image, and price.
+ * Navigates the user to the product details view when clicked.
+ * 
+ * @param {ProductCardProps} props - The parameters containing the product object.
+ */
 export default function ProductCard({ product }: ProductCardProps) {
+
   const navigate = useNavigate();
   return (
     <div className="bg-surface-container-low border border-surface-variant rounded-lg p-6 relative group hover:border-outline transition-colors duration-300 flex flex-col h-full">

@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { Product, CartItem } from "../types";
 
+/**
+ * Context value interface representing shopping cart state and operations.
+ */
 interface CartContextType {
   cartItems: CartItem[];
   cartCount: number;
@@ -15,6 +18,13 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+/**
+ * Hook to access the Shopping Cart state and modifier methods.
+ * Must be used within a `CartProvider` component tree.
+ * 
+ * @returns {CartContextType} The shopping cart context.
+ * @throws {Error} If the hook is used outside of a CartProvider.
+ */
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -23,7 +33,15 @@ export const useCart = () => {
   return context;
 };
 
+/**
+ * Context Provider component that manages shopping cart state,
+ * including item insertion, removal, quantity adjustments, and sessionStorage persistence.
+ * 
+ * @param {object} props
+ * @param {React.ReactNode} props.children - The child components wrapped by the provider.
+ */
 export function CartProvider({ children }: { children: React.ReactNode }) {
+
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     const savedCart = sessionStorage.getItem("cart");
     if (savedCart) {

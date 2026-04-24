@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: MIT
  */
 
+/**
+ * Represents a rocket engine, hardware part, or telemetry device.
+ */
 export interface Product {
   id: string;
   name: string;
@@ -12,10 +15,16 @@ export interface Product {
   category: "Propulsion" | "Telemetry" | "Systems" | "Fuel";
 }
 
+/**
+ * Represents a Product item that has been added to the shopping cart.
+ */
 export interface CartItem extends Product {
   quantity: number;
 }
 
+/**
+ * Represents the data captured during the checkout process.
+ */
 export interface CheckoutFormData {
   firstName?: string;
   lastName?: string;
@@ -33,6 +42,7 @@ export interface CheckoutFormData {
   expYear?: string;
   comments?: string;
 }
+
 
 export const PRODUCTS: Product[] = [
   {

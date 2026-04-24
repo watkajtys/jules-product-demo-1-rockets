@@ -10,7 +10,12 @@ interface State {
   error: Error | null;
 }
 
+/**
+ * A React Error Boundary component that intercepts unhandled exceptions in its child tree.
+ * It isolates the failure and displays an elegant system fallback UI to the user.
+ */
 export class ErrorBoundary extends React.Component<Props, State> {
+
   public state: State = {
     hasError: false,
     error: null,
