@@ -18,6 +18,8 @@ import Profile from "./pages/Profile";
 import Search from "./pages/Search";
 
 import { useProduct } from "./hooks/useFetchProducts";
+import ErrorBoundary from "./components/ErrorBoundary";
+
 
 const ProductLoader = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,14 +41,22 @@ const ProductLoader = () => {
 
 const ProductDetailsWrapper = () => {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col items-center justify-center py-24 animate-pulse">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl mb-4">sync</span>
-        <span className="text-xs font-bold tracking-widest uppercase text-on-surface-variant">Downloading Manifest Data...</span>
+    <ErrorBoundary fallback={
+      <div className="p-12 bg-error-container/10 border border-error/30 text-error text-center rounded font-mono my-8">
+        <span className="material-symbols-outlined text-3xl mb-2 animate-pulse">warning</span>
+        <h4 className="text-sm font-bold uppercase">PRODUCT DATA LINK TERMINATED</h4>
+        <p className="text-[10px] text-on-surface-variant/80 uppercase mt-1">Telemetry node failed to broadcast product spec manifest.</p>
       </div>
     }>
-      <ProductLoader />
-    </Suspense>
+      <Suspense fallback={
+        <div className="flex flex-col items-center justify-center py-24 animate-pulse">
+          <span className="material-symbols-outlined animate-spin text-primary text-4xl mb-4">sync</span>
+          <span className="text-xs font-bold tracking-widest uppercase text-on-surface-variant">Downloading Manifest Data...</span>
+        </div>
+      }>
+        <ProductLoader />
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 

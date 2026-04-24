@@ -1,6 +1,8 @@
 import React, { Suspense } from "react";
 import CatalogGrid from "../components/CatalogGrid";
 import SkeletonCard from "../components/SkeletonCard";
+import ErrorBoundary from "../components/ErrorBoundary";
+
 
 
 export default function Home() {
@@ -44,13 +46,22 @@ export default function Home() {
             ))}
           </div>
 
-          <Suspense fallback={
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+          <ErrorBoundary fallback={
+            <div className="p-8 bg-error-container/10 border border-error/30 text-error text-center rounded font-mono">
+              <span className="material-symbols-outlined text-2xl mb-2 animate-pulse">warning</span>
+              <h4 className="text-xs font-bold uppercase">CATALOG DATA UNAVAILABLE</h4>
+              <p className="text-[9px] text-on-surface-variant/80 uppercase mt-1">Failed to establish link with orbital inventory manifest.</p>
             </div>
           }>
-            <CatalogGrid />
-          </Suspense>
+            <Suspense fallback={
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+              </div>
+            }>
+              <CatalogGrid />
+            </Suspense>
+          </ErrorBoundary>
+
         </section>
 
 
