@@ -8,13 +8,15 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 const YEARS = Array.from({ length: 200 }, (_, i) => 1900 + i);
 const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
+import { CheckoutFormData } from "../types";
+
 interface CheckoutProps {
   total: number;
   onComplete: () => void;
 }
 
 export default function Checkout({ total, onComplete }: CheckoutProps) {
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<CheckoutFormData>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);

@@ -31,7 +31,6 @@ const ProductDetailsWrapper = () => {
     <ProductDetails 
       product={product} 
       onBack={() => navigate("/")} 
-      onAddToCart={(p) => setAddingProduct(p)} 
     />
   );
 };

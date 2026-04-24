@@ -16,6 +16,24 @@ export interface CartItem extends Product {
   quantity: number;
 }
 
+export interface CheckoutFormData {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  emailConfirm?: string;
+  phone?: string;
+  street1?: string;
+  street2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  cardType?: string;
+  cardNumber?: string;
+  expMonth?: string;
+  expYear?: string;
+  comments?: string;
+}
+
 export const PRODUCTS: Product[] = [
   {
     id: "ac-1",
